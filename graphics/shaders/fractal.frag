@@ -26,12 +26,12 @@ float divBound(float alpha, float beta, vec2 prec) {
     return R;
 }
 
+const vec3 Hue[6] = vec3[](vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0));
 vec3 colorFromHueSat(float hue, float sat) {
-    vec3 cw[6] = vec3[](vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0));
     float h6 = hue*6.0;
     int i = int(h6);
-    vec3 c1 = cw[i];
-    vec3 c2 = cw[(i+1) % 6];
+    vec3 c1 = Hue[i];
+    vec3 c2 = Hue[(i+1) % 6];
     float t = h6 - float(i);
     vec3 c = c1 * (1-t) + c2 * t;
     return sat * c/length(c);
@@ -58,7 +58,7 @@ void main()
         }
     }
     float hue = float(j)/float(depth);
-    float sat = 1- pow(0.5 ,float(j));
+    float sat = 1 - pow(0.5, float(depth-j));
 
     color = vec4(colorFromHueSat(hue, sat), 1.0);
 }

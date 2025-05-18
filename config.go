@@ -35,14 +35,17 @@ func screenshot(w *glfw.Window) {
 	bitmap := make([]uint8, width*height*4)
 	gl.Finish() // wait for frame to be done
 	gl.ReadPixels(0, 0, int32(width), int32(height), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(bitmap))
-	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
-	copy(img.Pix, bitmap)
-	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	if err := png.Encode(file, img); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
+		copy(img.Pix, bitmap)
+		file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		if err := png.Encode(file, img); err != nil {
+			log.Fatal(err)
+		}
+	}()
 }
