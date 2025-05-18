@@ -22,7 +22,11 @@ func archive(state *State) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	encoder := toml.NewEncoder(file)
 	if err := encoder.Encode(state.Viewer); err != nil {
@@ -42,7 +46,11 @@ func screenshot(w *glfw.Window) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Fatal(err)
+			}
+		}()
 
 		if err := png.Encode(file, img); err != nil {
 			log.Fatal(err)
