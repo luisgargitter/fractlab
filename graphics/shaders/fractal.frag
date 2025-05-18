@@ -26,10 +26,18 @@ float divBound(float alpha, float beta, vec2 prec) {
     return R;
 }
 
-const int depth = 64;
-const int limitr = depth;
-const int limitg = depth/8;
-const int limitb = depth/64;
+vec3 colorFromHueSat(float hue, float sat) {
+    vec3 cw[6] = vec3[](vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0));
+    float h6 = hue*6.0;
+    int i = int(h6);
+    vec3 c1 = cw[i];
+    vec3 c2 = cw[(i+1) % 6];
+    float t = h6 - float(i);
+    vec3 c = c1 * (1-t) + c2 * t;
+    return sat * c/length(c);
+}
+
+const int depth = 256;
 
 void main()
 {
@@ -41,24 +49,16 @@ void main()
     vec2 y = x;
 
     int j = 0;
-    int k = 0;
-    int l = 0;
 
     for(int i = 0; i < depth; i++) {
         y = PZn[0]*cMul(y, y) + PZn[1]*y + prec;
 
-        //y = cMul(y, y) + x; // mandelbrot set
-        //z = cAdd(cMul(z, z), vec2(-0.5, 0.6)); // julia set
-
         if(length(y) < R) {
-            if(i < limitr) j++;
-            if(i < limitg) k++;
-            if(i < limitb) l++;
+            j++;
         }
     }
-    float r = float(j)/float(limitr);
-    float g = float(k)/float(limitg);
-    float b = float(l)/float(limitb);
+    float hue = float(j)/float(depth);
+    float sat = 1- pow(0.5 ,float(j));
 
-    color = vec4(1-r, 1-g, 1-b, 1.0);
+    color = vec4(colorFromHueSat(hue, sat), 1.0);
 }

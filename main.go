@@ -8,7 +8,6 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"log"
 	"runtime"
-	"unsafe"
 )
 
 type State struct {
@@ -33,12 +32,12 @@ func main() {
 	c := ControlState{
 		MouseX: 0, MouseY: 0,
 		Focus:       None,
-		Sensitivity: 0.01,
+		Sensitivity: 1.0,
 	}
 	a := fractals.Animation{
 		Src:  fractals.Mandelbrot(),
 		Dest: fractals.Julia(-0.6 + 1i*0.6),
-		T:    0.0,
+		Time: 0.0,
 	}
 
 	state := State{
@@ -54,7 +53,7 @@ func main() {
 
 	setWindowHints()
 	win := initWin()
-	setCallbacks(win, unsafe.Pointer(&state))
+	SetCallbacks(win, &state)
 	width, height := win.GetFramebufferSize()
 	state.Viewer.aspectRatio = float32(width) / float32(height)
 

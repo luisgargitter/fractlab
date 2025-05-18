@@ -29,14 +29,13 @@ func Julia(c complex64) Fractal {
 
 type Animation struct {
 	Src, Dest Fractal
-	T         float32
+	Time      float32
 }
 
 func GetFractal(a Animation) Fractal {
-
 	vsrc := mgl32.NewVecNFromData([]float32{real(a.Src.C), imag(a.Src.C), a.Src.PZ0[0], a.Src.PZ0[1], a.Src.PZn[0], a.Src.PZn[1]})
 	vdest := mgl32.NewVecNFromData([]float32{real(a.Dest.C), imag(a.Dest.C), a.Dest.PZ0[0], a.Dest.PZ0[1], a.Dest.PZn[0], a.Dest.PZn[1]})
-	vres := vsrc.Mul(nil, 1-a.T).Add(nil, vdest.Mul(nil, a.T)).Raw()
+	vres := vsrc.Mul(nil, 1-a.Time).Add(nil, vdest.Mul(nil, a.Time)).Raw()
 	return Fractal{
 		C:   complex(vres[0], vres[1]),
 		PZ0: [2]Polynomial{vres[2], vres[3]},

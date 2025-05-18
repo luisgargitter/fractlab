@@ -53,7 +53,7 @@ func Cube() Mesh {
 
 func Sphere(resolution int) Mesh {
 	r := Cube()
-	for range resolution {
+	for i := 0; i < resolution; i++ {
 		r.Enhance()
 	}
 	r.PuffUp()

@@ -11,21 +11,21 @@ import (
 	"time"
 )
 
-func save(w *glfw.Window) {
-	state := (*State)(w.GetUserPointer())
-	archive(state)
+func Save(w *glfw.Window) {
+	//state := (*State)(w.GetUserPointer())
+	//archive(state)
 	screenshot(w)
 }
 
 func archive(state *State) {
-	file, err := os.Create("saved/" + time.Now().Format(time.DateTime) + ".toml")
+	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".toml")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
 	encoder := toml.NewEncoder(file)
-	if err := encoder.Encode(state); err != nil {
+	if err := encoder.Encode(state.Viewer); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -37,7 +37,7 @@ func screenshot(w *glfw.Window) {
 	gl.ReadPixels(0, 0, int32(width), int32(height), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(bitmap))
 	img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 	copy(img.Pix, bitmap)
-	file, err := os.Create("saved/" + time.Now().Format(time.DateTime) + ".png")
+	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
 	if err != nil {
 		log.Fatal(err)
 	}
