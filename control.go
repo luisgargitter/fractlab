@@ -84,27 +84,36 @@ func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action,
 			state.control.Focus = Time
 
 		case glfw.Key1:
-			state.control.Sensitivity = 0.000000001
+			state.control.Sensitivity = math.Pow(0.5, 9)
 		case glfw.Key2:
-			state.control.Sensitivity = 0.00000001
+			state.control.Sensitivity = math.Pow(0.5, 8)
 		case glfw.Key3:
-			state.control.Sensitivity = 0.0000001
+			state.control.Sensitivity = math.Pow(0.5, 7)
 		case glfw.Key4:
-			state.control.Sensitivity = 0.000001
+			state.control.Sensitivity = math.Pow(0.5, 6)
 		case glfw.Key5:
-			state.control.Sensitivity = 0.00001
+			state.control.Sensitivity = math.Pow(0.5, 5)
 		case glfw.Key6:
-			state.control.Sensitivity = 0.0001
+			state.control.Sensitivity = math.Pow(0.5, 4)
 		case glfw.Key7:
-			state.control.Sensitivity = 0.001
+			state.control.Sensitivity = math.Pow(0.5, 3)
 		case glfw.Key8:
-			state.control.Sensitivity = 0.01
+			state.control.Sensitivity = math.Pow(0.5, 2)
 		case glfw.Key9:
-			state.control.Sensitivity = 0.1
+			state.control.Sensitivity = math.Pow(0.5, 1)
 		case glfw.Key0:
-			state.control.Sensitivity = 1.0
+			state.control.Sensitivity = math.Pow(0.5, 0)
 		}
 	case glfw.Repeat:
+		switch key {
+		case glfw.KeyP:
+			if mods == glfw.ModShift { // reverse time
+				scrollCallback(w, 0, -1)
+			} else {
+				scrollCallback(w, 0, 1)
+			}
+
+		}
 
 	}
 }

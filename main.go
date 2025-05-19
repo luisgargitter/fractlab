@@ -6,8 +6,16 @@ import (
 	"fractlab/graphics"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
+	"image"
+	"image/draw"
+	"image/png"
 	"log"
+	"os"
 	"runtime"
+	"time"
 )
 
 type State struct {
@@ -21,7 +29,53 @@ func init() {
 	runtime.LockOSThread()
 }
 
+func fontTest() {
+	// Read the font data.
+	fontBytes, err := os.ReadFile("fonts/NotoSansMath-Regular.ttf")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	f, err := truetype.Parse(fontBytes)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	rgba := image.NewRGBA(image.Rect(0, 0, 800, 800))
+	draw.Draw(rgba, rgba.Bounds(), image.White, image.Pt(0, 0), draw.Src)
+
+	c := freetype.NewContext()
+	c.SetDPI(72)
+	c.SetFont(f)
+	c.SetFontSize(24)
+	c.SetSrc(image.Black)
+	c.SetDst(rgba)
+	c.SetClip(rgba.Bounds())
+	c.SetHinting(font.HintingNone)
+
+	pt := freetype.Pt(10, 24)
+	if _, err := c.DrawString("\u222B x dx", pt); err != nil {
+		log.Println(err)
+	}
+
+	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	if err := png.Encode(file, rgba); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
+	//fontTest()
 	fmt.Println("Initialization...")
 
 	v := viewerState{
@@ -63,7 +117,7 @@ func main() {
 	canvas := initCanvas()
 
 	for !win.ShouldClose() {
-		glfw.PollEvents()
+		glfw.WaitEvents()
 
 		state.Viewer.Fractal = fractals.GetFractal(state.Animation)
 		setUniforms(state.Viewer)

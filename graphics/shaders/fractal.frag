@@ -50,12 +50,10 @@ void main()
 
     int j = 0;
 
-    for(int i = 0; i < depth; i++) {
+    for(int i = 0; i < depth && length(y) < R; i++) {
         y = PZn[0]*cMul(y, y) + PZn[1]*y + prec;
 
-        if(length(y) < R) {
-            j++;
-        }
+        j++;
     }
     float hue = float(j)/float(depth);
     float sat = 1 - pow(0.5, float(depth-j));
