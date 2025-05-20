@@ -117,7 +117,7 @@ func main() {
 	canvas := initCanvas()
 
 	for !win.ShouldClose() {
-		glfw.WaitEvents()
+		glfw.WaitEvents() // only render on change, for continuous drawing use PollEvents instead
 
 		state.Viewer.Fractal = fractals.GetFractal(state.Animation)
 		setUniforms(state.Viewer)
