@@ -35,14 +35,20 @@ func archive(state *State) {
 }
 
 func screenshot(w *glfw.Window) {
+	state := (*State)(w.GetUserPointer())
+
 	width, height := w.GetSize()
 	bitmap := make([]uint8, width*height*4)
 	gl.Finish() // wait for frame to be done
 	gl.ReadPixels(0, 0, int32(width), int32(height), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(bitmap))
+
+	state.wg.Add(1)
 	go func() {
+		defer state.wg.Done()
+
 		img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 		copy(img.Pix, bitmap)
-		file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
+		file, err := os.Create("saved/" + time.Now().Format(time.RFC3339) + ".png")
 		if err != nil {
 			log.Fatal(err)
 		}

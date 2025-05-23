@@ -15,6 +15,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type State struct {
 	Animation fractals.Animation
 	Viewer    viewerState
 	control   ControlState // lowercase not to end up in toml file
+	wg        sync.WaitGroup
 }
 
 func init() {
@@ -128,5 +130,5 @@ func main() {
 
 		win.SwapBuffers()
 	}
-
+	state.wg.Wait() // wait for any pending screenshot saving to complete
 }
