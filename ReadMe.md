@@ -1,4 +1,5 @@
 # Fractlab
+An interactive fractal renderer. Capable of interpolating between different fractals (default: Mandelbrot- and Juliaset).
 ![Fractlab Screenschot](readme_image.png)
 ## Installation
 ## Dependencies
