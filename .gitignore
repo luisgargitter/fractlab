@@ -1,2 +1,6 @@
+.obsidian/
+.obsidian/**
+.idea/
+.idea/**
 fonts/
 fonts/*

@@ -1,4 +1,6 @@
-# Installation
+# Fractlab
+![Fractlab Screenschot](readme_image.png)
+## Installation
 ## Dependencies
 See [go.mod](go.mod).
 The fragment shader uses variable length loops -> OpenGL v3.3 or higher is needed.
@@ -6,10 +8,10 @@ The fragment shader uses variable length loops -> OpenGL v3.3 or higher is neede
 To install the needed glfw headers see [glfw-compilation](https://www.glfw.org/docs/3.3/compile.html).
 Check supported OpenGL-version with `glxinfo | grep "OpenGL version"`.
 
-# Running the program
+## Running the program
 Use the command `go run .` to compile and execute the program.
 
-# Controls
+## Controls
 There are two control modes `zoom` (`Key S`) and `time` (`Key T`). \
 The global sensitivity/granularity of the scroll-wheel can be set with the number keys `1-9`, \
 where `1` gives the most and `9` the least fine grained control. \
