@@ -15,4 +15,4 @@ The global sensitivity/granularity of the scroll-wheel can be set with the numbe
 where `1` gives the most and `9` the least fine grained control. \
 Navigation is done via click-and-drag mechanics. \
 The program has a screenshot functionality built-in by pressing `Ctrl+S`, \
-which saves a `.png` to the ´saved/´ directory.
+which saves a `.png` to the `saved/` directory.
