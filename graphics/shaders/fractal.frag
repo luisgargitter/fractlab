@@ -15,6 +15,7 @@ vec2 cMul(vec2 a, vec2 b) {
     );
 }
 
+// calculates divergence bound for this interpolated fractal (analytically derived)
 float divBound(float alpha, float beta, vec2 prec) {
     alpha = abs(alpha);
     beta = abs(beta);
