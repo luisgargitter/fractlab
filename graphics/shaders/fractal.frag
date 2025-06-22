@@ -19,9 +19,9 @@ vec2 cMul(vec2 a, vec2 b) {
 float divBound(float alpha, float beta, vec2 prec) {
     alpha = abs(alpha);
     beta = abs(beta);
-    float c = length(prec);
+    float co = length(prec);
     float p2 = (beta+1)/(2*alpha);
-    float q = -c/alpha;
+    float q = -co/alpha;
     float R = p2 + sqrt(p2*p2 - q);
 
     return R;
@@ -34,8 +34,8 @@ vec3 colorFromHueSat(float hue, float sat) {
     vec3 c1 = Hue[i];
     vec3 c2 = Hue[(i+1) % 6];
     float t = h6 - float(i);
-    vec3 c = c1 * (1-t) + c2 * t;
-    return sat * c/length(c);
+    vec3 col = c1 * (1-t) + c2 * t;
+    return sat * col/length(col);
 }
 
 const int depth = 256;

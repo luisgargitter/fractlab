@@ -8,17 +8,18 @@ import (
 	"unsafe"
 )
 
-type scrollFocus = int
+type Mode = int
 
 const (
-	None = scrollFocus(iota)
+	None = Mode(iota)
 	Scale
 	Time
+	Coefficient
 )
 
 type ControlState struct {
 	MouseX, MouseY float64
-	Focus          scrollFocus
+	Focus          Mode
 	Sensitivity    float64
 }
 
@@ -31,17 +32,30 @@ func SetCallbacks(win *glfw.Window, state *State) {
 
 func cursorPosCallback(w *glfw.Window, xpos float64, ypos float64) {
 	state := (*State)(w.GetUserPointer())
+
 	width, height := w.GetSize()
-	xpos = 2*xpos/float64(width) - 1
-	ypos = -(2*ypos/float64(height) - 1)
-	deltaMouseX := float32(state.control.MouseX - xpos)
-	deltaMouseY := float32(state.control.MouseY - ypos)
+	x := 2*xpos/float64(width) - 1
+	y := -(2*ypos/float64(height) - 1)
+	deltaMouseX := float32(state.control.MouseX - x)
+	deltaMouseY := float32(state.control.MouseY - y)
 	if w.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 		state.Viewer.OffsetX = state.Viewer.OffsetX + deltaMouseX*state.Viewer.Scale
 		state.Viewer.OffsetY = state.Viewer.OffsetY + deltaMouseY*state.Viewer.Scale
 	}
-	state.control.MouseX = xpos
-	state.control.MouseY = ypos
+	state.control.MouseX = x
+	state.control.MouseY = y
+
+	switch state.control.Focus {
+	case Coefficient:
+		r := state.Viewer.OffsetX + float32(x)*state.Viewer.Scale
+		i := state.Viewer.OffsetY + float32(y)*state.Viewer.Scale
+
+		if w.GetMouseButton(glfw.MouseButtonRight) == glfw.Press {
+			state.Animation.Src.C = complex(r, i)
+			state.Animation.Dest.C = complex(r, i)
+		}
+	default:
+	}
 }
 
 func scrollCallback(w *glfw.Window, xoff float64, yoff float64) {
@@ -83,6 +97,9 @@ func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action,
 		case glfw.KeyT:
 			state.control.Focus = Time
 
+		case glfw.KeyC:
+			state.control.Focus = Coefficient
+
 		case glfw.Key1:
 			state.control.Sensitivity = math.Pow(0.5, 9)
 		case glfw.Key2:
@@ -114,6 +131,5 @@ func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action,
 			}
 
 		}
-
 	}
 }
