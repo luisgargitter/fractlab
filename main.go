@@ -107,7 +107,6 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	setWindowHints()
 	win := initWin()
 	SetCallbacks(win, &state)
 	width, height := win.GetFramebufferSize()

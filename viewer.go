@@ -17,10 +17,13 @@ type viewerState struct {
 	uniforms    Uniforms
 }
 
-func setWindowHints() {
+func setWindowHints(mode *glfw.VidMode) {
+	glfw.WindowHint(glfw.Decorated, glfw.False)
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.RefreshRate, mode.RefreshRate)
+
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 }
@@ -28,10 +31,15 @@ func setWindowHints() {
 func initWin() *glfw.Window {
 	monitor := glfw.GetPrimaryMonitor()
 	mode := monitor.GetVideoMode()
-	win, err := glfw.CreateWindow(mode.Width, mode.Height, "FractLab", monitor, nil)
+
+	setWindowHints(mode)
+
+	win, err := glfw.CreateWindow(mode.Width, mode.Height, "FractLab", nil, nil)
 	if err != nil {
 		log.Fatalln("Failed to create window:", err)
 	}
+
+	win.SetPos(0, 0)
 
 	return win
 }
