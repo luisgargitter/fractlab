@@ -48,7 +48,7 @@ func screenshot(w *glfw.Window) {
 
 		img := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 		copy(img.Pix, bitmap)
-		file, err := os.Create("saved/" + time.Now().Format(time.RFC3339) + ".png")
+		file, err := os.Create("saved/" + time.Now().Format("2006-01-02_15-04-05") + ".png")
 		if err != nil {
 			log.Fatal(err)
 		}
