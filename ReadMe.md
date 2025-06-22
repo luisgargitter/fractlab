@@ -14,7 +14,7 @@ Use the command `go run .` to compile and execute the program.
 
 ## Controls
 There are three control modes `zoom` (`Key S`), `time` (`Key T`) and `coefficient` (`Key C`). \
-The mode coefficient adds an overlay to the fractal to set the coefficient c in the fractal. \
+The mode coefficient adds an overlay to set the coefficient c in the fractal. \
 The global sensitivity/granularity of the scroll-wheel can be set with the number keys `1-9`, \
 where `1` gives the most and `9` the least fine grained control. \
 Navigation is done via click-and-drag mechanics. \
