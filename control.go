@@ -36,6 +36,10 @@ func cursorPosCallback(w *glfw.Window, xpos float64, ypos float64) {
 	width, height := w.GetSize()
 	x := 2*xpos/float64(width) - 1
 	y := -(2*ypos/float64(height) - 1)
+
+	gx := (state.Viewer.OffsetX + float32(x)*state.Viewer.Scale) * state.Viewer.aspectRatio
+	gy := state.Viewer.OffsetY + float32(y)*state.Viewer.Scale
+
 	deltaMouseX := float32(state.control.MouseX - x)
 	deltaMouseY := float32(state.control.MouseY - y)
 	if w.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
@@ -47,12 +51,9 @@ func cursorPosCallback(w *glfw.Window, xpos float64, ypos float64) {
 
 	switch state.control.Focus {
 	case Coefficient:
-		r := state.Viewer.OffsetX + float32(x)*state.Viewer.Scale
-		i := state.Viewer.OffsetY + float32(y)*state.Viewer.Scale
-
 		if w.GetMouseButton(glfw.MouseButtonRight) == glfw.Press {
-			state.Animation.Src.C = complex(r, i)
-			state.Animation.Dest.C = complex(r, i)
+			state.Animation.Src.C = complex(gx, gy)
+			state.Animation.Dest.C = complex(gx, gy)
 		}
 	default:
 	}

@@ -1,5 +1,8 @@
 #version 330 core
 
+uniform int overlay;
+uniform float scale; // for ui elements
+
 uniform vec2 c;
 uniform vec2 PZ0;
 uniform vec2 PZn;
@@ -60,4 +63,15 @@ void main()
     float sat = 1 - pow(0.5, float(depth-j));
 
     color = vec4(colorFromHueSat(hue, sat), 1.0);
+
+    if(overlay == 1) {
+        float lx = length(x);
+        bool circle = abs(1 - length(x)) < 0.001 * scale;
+        bool xaxis = abs(0 - x.x) < 0.001 * scale;
+        bool yaxis = abs(0 - x.y) < 0.001 * scale;
+        bool coeff = abs(length(x - c)) < 0.007 * scale;
+        if (circle || xaxis || yaxis || coeff) {
+            color = vec4(1, 1, 1, 1);
+        }
+    }
 }

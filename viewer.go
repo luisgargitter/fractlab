@@ -11,6 +11,7 @@ import (
 
 type viewerState struct {
 	OffsetX, OffsetY, Scale float32
+	Overlay                 int32
 	Fractal                 fractals.Fractal
 
 	aspectRatio float32
@@ -58,7 +59,8 @@ type Uniforms struct {
 	PZn,
 	OffR,
 	OffI,
-	Scale int32
+	Scale,
+	Overlay int32
 }
 
 func getUniforms(program uint32) Uniforms {
@@ -73,6 +75,7 @@ func getUniforms(program uint32) Uniforms {
 	uniforms.OffR = gl.GetUniformLocation(program, gl.Str("offR\x00"))
 	uniforms.OffI = gl.GetUniformLocation(program, gl.Str("offI\x00"))
 	uniforms.Scale = gl.GetUniformLocation(program, gl.Str("scale\x00"))
+	uniforms.Overlay = gl.GetUniformLocation(program, gl.Str("overlay\x00"))
 
 	return uniforms
 }
@@ -88,4 +91,5 @@ func setUniforms(v viewerState) {
 	gl.Uniform1f(u.OffR, v.OffsetX)
 	gl.Uniform1f(u.OffI, v.OffsetY)
 	gl.Uniform1f(u.Scale, v.Scale)
+	gl.Uniform1i(u.Overlay, v.Overlay)
 }

@@ -121,6 +121,13 @@ func main() {
 		glfw.WaitEvents() // only render on change, for continuous drawing use PollEvents instead
 
 		state.Viewer.Fractal = fractals.GetFractal(state.Animation)
+		state.Viewer.Overlay = 0
+		switch state.control.Focus {
+		case Coefficient:
+			state.Viewer.Overlay = 1
+		default:
+		}
+
 		setUniforms(state.Viewer)
 
 		gl.ClearColor(0, 0, 0, 1)
