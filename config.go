@@ -12,13 +12,31 @@ import (
 )
 
 func Save(w *glfw.Window) {
-	//state := (*State)(w.GetUserPointer())
-	//archive(state)
+	state := (*State)(w.GetUserPointer())
+	archive(state)
 	screenshot(w)
 }
 
+func Load(w *glfw.Window, filename string) {
+	state := (*State)(w.GetUserPointer())
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	decoder := toml.NewDecoder(file)
+	if _, err := decoder.Decode(state.Viewer); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func archive(state *State) {
-	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".toml")
+	file, err := os.Create("saved/" + time.Now().Format("2006-01-02_15-04-05") + ".toml")
 	if err != nil {
 		log.Fatal(err)
 	}

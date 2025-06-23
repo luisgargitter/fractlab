@@ -84,7 +84,7 @@ func setUniforms(v viewerState) {
 	f := v.Fractal
 	u := v.uniforms
 	gl.Uniform1f(u.Aspect, v.aspectRatio)
-	gl.Uniform2f(u.C, real(f.C), imag(f.C))
+	gl.Uniform2f(u.C, f.C[0], f.C[1])
 	gl.Uniform2f(u.PZ0, f.PZ0[0], f.PZ0[1])
 	gl.Uniform2f(u.PZn, f.PZn[0], f.PZn[1])
 

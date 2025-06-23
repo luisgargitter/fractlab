@@ -52,8 +52,8 @@ func cursorPosCallback(w *glfw.Window, xpos float64, ypos float64) {
 	switch state.control.Focus {
 	case Coefficient:
 		if w.GetMouseButton(glfw.MouseButtonRight) == glfw.Press {
-			state.Animation.Src.C = complex(gx, gy)
-			state.Animation.Dest.C = complex(gx, gy)
+			state.Animation.Src.C = mgl32.Vec2{gx, gy}
+			state.Animation.Dest.C = mgl32.Vec2{gx, gy}
 		}
 	default:
 	}
