@@ -21,7 +21,11 @@ func Save(w *glfw.Window) {
 
 func Load(w *glfw.Window) {
 	w.Iconify()
-	filename, err := dialog.File().Title("Select a file").Load()
+	filename, err := dialog.File().
+		Title("Select a fractal").
+		Filter("Fractals", "toml").
+		SetStartDir("./saved").
+		Load()
 	w.Restore()
 	w.Focus()
 	if err != nil {
