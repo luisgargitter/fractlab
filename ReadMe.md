@@ -1,6 +1,6 @@
 # Fractlab
 An interactive fractal renderer, capable of interpolating between different fractals (default: Mandelbrot- and Juliaset).
-![Fractlab Screenschot](readme_image.png)
+![Thumbnail](readme.png)
 ## Installation
 ## Dependencies
 On Linux gtk3 is needed (secondary dependency for file picking dialog).

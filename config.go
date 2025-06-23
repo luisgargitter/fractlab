@@ -42,6 +42,10 @@ func Load(w *glfw.Window) {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println(err)
+		w.Iconify()
+		dialog.Message("Failed to load fractal: %s", err).Title("Error").Info()
+		w.Restore()
+		w.Focus()
 		return
 	}
 	defer func() {
