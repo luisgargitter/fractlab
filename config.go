@@ -10,6 +10,7 @@ import (
 	"image/png"
 	"log"
 	"os"
+	"path"
 	"time"
 )
 
@@ -23,12 +24,14 @@ func Load(w *glfw.Window) {
 	w.Iconify()
 	filename, err := dialog.File().
 		Title("Select a fractal").
-		Filter("Fractals", "toml").
+		Filter("Fractals", "toml", "png"). // allow .png only for preview
 		SetStartDir("./saved").
 		Load()
 	w.Restore()
 	w.Focus()
-	if err != nil {
+	if path.Ext(filename) == ".png" {
+		filename = filename[0:len(filename)-4] + ".toml" // replace extension to open fractal anyways.
+	} else if err != nil {
 		if !errors.Is(err, dialog.ErrCancelled) {
 			log.Fatal(err)
 		} else { // file opening aborted
@@ -38,7 +41,8 @@ func Load(w *glfw.Window) {
 	state := (*State)(w.GetUserPointer())
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
