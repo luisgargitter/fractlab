@@ -101,6 +101,9 @@ func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action,
 		case glfw.KeyC:
 			state.control.Focus = Coefficient
 
+		case glfw.KeyL:
+			Load(w)
+
 		case glfw.Key1:
 			state.control.Sensitivity = math.Pow(0.5, 9)
 		case glfw.Key2:

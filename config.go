@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"github.com/BurntSushi/toml"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/sqweek/dialog"
 	"image"
 	"image/png"
 	"log"
@@ -17,7 +19,18 @@ func Save(w *glfw.Window) {
 	screenshot(w)
 }
 
-func Load(w *glfw.Window, filename string) {
+func Load(w *glfw.Window) {
+	w.Iconify()
+	filename, err := dialog.File().Title("Select a file").Load()
+	w.Restore()
+	w.Focus()
+	if err != nil {
+		if !errors.Is(err, dialog.ErrCancelled) {
+			log.Fatal(err)
+		} else { // file opening aborted
+			return
+		}
+	}
 	state := (*State)(w.GetUserPointer())
 	file, err := os.Open(filename)
 	if err != nil {
@@ -29,10 +42,17 @@ func Load(w *glfw.Window, filename string) {
 		}
 	}()
 
+	// safe current fractal as source for animation
+	state.Animation.Src = state.Viewer.Fractal
+
 	decoder := toml.NewDecoder(file)
-	if _, err := decoder.Decode(state.Viewer); err != nil {
+	if _, err := decoder.Decode(&state.Viewer); err != nil {
 		log.Fatal(err)
 	}
+
+	// fractal only read to current state not animation
+	state.Animation.Dest = state.Viewer.Fractal
+	state.Animation.Time = 1.0
 }
 
 func archive(state *State) {
