@@ -71,11 +71,12 @@ func scrollCallback(w *glfw.Window, xoff float64, yoff float64) {
 	case Time:
 		t := state.Animation.Time + float32(yoff*state.control.Sensitivity*0.01)
 		state.Animation.Time = mgl32.Clamp(t, 0, 1)
+	default:
 	}
-
 }
 
 func keyCallback(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	_ = scancode
 	state := (*State)(w.GetUserPointer())
 
 	switch action {
