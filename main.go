@@ -2,28 +2,21 @@ package main
 
 import (
 	"fmt"
-	"fractlab/fractals"
 	"fractlab/graphics"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
-	"image"
-	"image/draw"
-	"image/png"
+	"github.com/go-gl/mathgl/mgl32"
 	"log"
-	"os"
 	"runtime"
 	"sync"
-	"time"
+	"unsafe"
 )
 
 type State struct {
-	Animation fractals.Animation
-	Viewer    viewerState
-	control   ControlState // lowercase not to end up in toml file
-	wg        sync.WaitGroup
+	canvas  *graphics.Canvas
+	fractal *graphics.Fractal
+	control *ControlState
+	wg      *sync.WaitGroup
 }
 
 func init() {
@@ -31,108 +24,99 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func fontTest() {
-	// Read the font data.
-	fontBytes, err := os.ReadFile("fonts/NotoSansMath-Regular.ttf")
+func setupWindow() (*glfw.Window, *State) {
+	fmt.Print("Initialize GLFW...")
+	if err := glfw.Init(); err != nil {
+		log.Fatalln("failed to initialize glfw:", err)
+	}
+
+	monitor := glfw.GetPrimaryMonitor()
+	mode := monitor.GetVideoMode()
+
+	glfw.WindowHint(glfw.Decorated, glfw.False)
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.RefreshRate, mode.RefreshRate)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+
+	win, err := glfw.CreateWindow(mode.Width, mode.Height, "FractLab", nil, nil)
 	if err != nil {
-		log.Println(err)
-		return
-	}
-	f, err := truetype.Parse(fontBytes)
-	if err != nil {
-		log.Println(err)
-		return
+		log.Fatalln("Failed to create window:", err)
 	}
 
-	rgba := image.NewRGBA(image.Rect(0, 0, 800, 800))
-	draw.Draw(rgba, rgba.Bounds(), image.White, image.Pt(0, 0), draw.Src)
+	win.SetCursorPosCallback(cursorPosCallback)
+	win.SetScrollCallback(scrollCallback)
+	win.SetKeyCallback(keyCallback)
 
-	c := freetype.NewContext()
-	c.SetDPI(72)
-	c.SetFont(f)
-	c.SetFontSize(24)
-	c.SetSrc(image.Black)
-	c.SetDst(rgba)
-	c.SetClip(rgba.Bounds())
-	c.SetHinting(font.HintingNone)
+	var state State
+	win.SetUserPointer(unsafe.Pointer(&state))
+	win.SetPos(0, 0)
 
-	pt := freetype.Pt(10, 24)
-	if _, err := c.DrawString("\u222B x dx", pt); err != nil {
-		log.Println(err)
+	win.MakeContextCurrent()
+	glfw.SwapInterval(1) // vsync (set to zero for unlimited framerate
+	fmt.Print("Done.\n")
+
+	fmt.Print("Initialize OpenGL...")
+	if err := gl.Init(); err != nil {
+		log.Fatalln("failed to initialize OpenGL", err)
 	}
+	width, height := win.GetSize()
+	gl.Viewport(0, 0, int32(width), int32(height))
 
-	file, err := os.Create("saved/" + time.Now().Format(time.UnixDate) + ".png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	gl.Enable(gl.CULL_FACE)
+	gl.CullFace(gl.FRONT)
 
-	if err := png.Encode(file, rgba); err != nil {
-		log.Fatal(err)
-	}
+	gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
+	fmt.Print("Done.\n")
+
+	return win, &state
+}
+
+func cleanupWindow(win *glfw.Window) {
+	glfw.Terminate()
 }
 
 func main() {
-	//fontTest()
-	fmt.Println("Initialization...")
+	win, state := setupWindow()
+	defer cleanupWindow(win)
 
-	v := viewerState{
-		OffsetX: 0, OffsetY: 0,
-		Scale:   2,
-		Fractal: fractals.Mandelbrot(),
+	width, height := win.GetFramebufferSize()
+	canvas := graphics.CanvasNew(mgl32.Vec2{0, 0}, 2, float32(width)/float32(height))
+	fractal := graphics.Fractal{
+		Colorwheel:      [6]mgl32.Vec3{{0, 0, 1}, {0, 1, 0}, {0, 1, 1}, {1, 0, 0}, {1, 0, 1}, {1, 1, 0}},
+		Polynomial:      [3]mgl32.Vec2{{0.325, 0.4}, {0, 0}, {1, 0}},
+		DivergenceBound: 2,
+		MaxIter:         255,
 	}
 	c := ControlState{
 		MouseX: 0, MouseY: 0,
 		Focus:       None,
 		Sensitivity: 1.0,
 	}
-	a := fractals.Animation{
-		Src:  fractals.Mandelbrot(),
-		Dest: fractals.Julia(-0.6 + 1i*0.6),
-		Time: 0.0,
+	state.canvas = &canvas
+	state.fractal = &fractal
+	state.control = &c
+	state.wg = new(sync.WaitGroup)
+
+	p, err := graphics.ProgramNew(&canvas, &fractal, win)
+	if err != nil {
+		panic(err)
 	}
 
-	state := State{
-		Animation: a,
-		Viewer:    v,
-		control:   c,
-	}
-
-	if err := glfw.Init(); err != nil {
-		log.Fatalln("failed to initialize glfw:", err)
-	}
-	defer glfw.Terminate()
-
-	win := initWin()
-	SetCallbacks(win, &state)
-	width, height := win.GetFramebufferSize()
-	state.Viewer.aspectRatio = float32(width) / float32(height)
-
-	program := graphics.BindRenderer(win)
-	state.Viewer.uniforms = getUniforms(program)
-
-	canvas := initCanvas()
+	state.control.Scale = state.canvas.Scale
+	state.control.Offset = state.control.Offset.Add(mgl32.Vec2{0, 0})
 
 	for !win.ShouldClose() {
-		glfw.WaitEvents() // only render on change, for continuous drawing use PollEvents instead
+		glfw.PollEvents() // only render on change, for continuous drawing use PollEvents instead
 
-		state.Viewer.Fractal = fractals.GetFractal(state.Animation)
-		state.Viewer.Overlay = 0
-		switch state.control.Focus {
-		case Coefficient:
-			state.Viewer.Overlay = 1
-		default:
-		}
-
-		setUniforms(state.Viewer)
+		state.canvas.Scale += 0.07 * (state.control.Scale - state.canvas.Scale)
+		state.canvas.Offset = state.canvas.Offset.Add(state.control.Offset.Sub(state.canvas.Offset).Mul(0.07))
 
 		gl.ClearColor(0, 0, 0, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		canvas.Draw()
+		p.Draw()
 
 		win.SwapBuffers()
 	}

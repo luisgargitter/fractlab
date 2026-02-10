@@ -1,89 +1,86 @@
 package main
 
 import (
-	"errors"
-	"github.com/BurntSushi/toml"
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/sqweek/dialog"
 	"image"
 	"image/png"
 	"log"
 	"os"
-	"path"
 	"time"
 )
 
-func Save(w *glfw.Window) {
-	state := (*State)(w.GetUserPointer())
-	archive(state)
-	screenshot(w)
-}
-
-func Load(w *glfw.Window) {
-	w.Iconify()
-	filename, err := dialog.File().
-		Title("Select a fractal").
-		Filter("Fractals", "toml", "png"). // allow .png only for preview
-		SetStartDir("./saved").
-		Load()
-	w.Restore()
-	w.Focus()
-	if path.Ext(filename) == ".png" {
-		filename = filename[0:len(filename)-4] + ".toml" // replace extension to open fractal anyways.
-	} else if err != nil {
-		if !errors.Is(err, dialog.ErrCancelled) {
-			log.Fatal(err)
-		} else { // file opening aborted
-			return
-		}
+/*
+	func Save(w *glfw.Window) {
+		state := (*State)(w.GetUserPointer())
+		archive(state)
+		screenshot(w)
 	}
-	state := (*State)(w.GetUserPointer())
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Println(err)
+
+	func Load(w *glfw.Window) {
 		w.Iconify()
-		dialog.Message("Failed to load fractal: %s", err).Title("Error").Info()
+		filename, err := dialog.File().
+			Title("Select a fractal").
+			Filter("Fractals", "toml", "png"). // allow .png only for preview
+			SetStartDir("./saved").
+			Load()
 		w.Restore()
 		w.Focus()
-		return
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
+		if path.Ext(filename) == ".png" {
+			filename = filename[0:len(filename)-4] + ".toml" // replace extension to open fractal anyways.
+		} else if err != nil {
+			if !errors.Is(err, dialog.ErrCancelled) {
+				log.Fatal(err)
+			} else { // file opening aborted
+				return
+			}
+		}
+		state := (*State)(w.GetUserPointer())
+		file, err := os.Open(filename)
+		if err != nil {
+			log.Println(err)
+			w.Iconify()
+			dialog.Message("Failed to load fractal: %s", err).Title("Error").Info()
+			w.Restore()
+			w.Focus()
+			return
+		}
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Fatal(err)
+			}
+		}()
+
+		// safe current fractal as source for animation
+		state.Animation.Src = state.Viewer.Fractal
+
+		decoder := toml.NewDecoder(file)
+		if _, err := decoder.Decode(&state.Viewer); err != nil {
 			log.Fatal(err)
 		}
-	}()
 
-	// safe current fractal as source for animation
-	state.Animation.Src = state.Viewer.Fractal
-
-	decoder := toml.NewDecoder(file)
-	if _, err := decoder.Decode(&state.Viewer); err != nil {
-		log.Fatal(err)
+		// fractal only read to current state not animation
+		state.Animation.Dest = state.Viewer.Fractal
+		state.Animation.Time = 1.0
 	}
 
-	// fractal only read to current state not animation
-	state.Animation.Dest = state.Viewer.Fractal
-	state.Animation.Time = 1.0
-}
-
-func archive(state *State) {
-	file, err := os.Create("saved/" + time.Now().Format("2006-01-02_15-04-05") + ".toml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
+	func archive(state *State) {
+		file, err := os.Create("saved/" + time.Now().Format("2006-01-02_15-04-05") + ".toml")
+		if err != nil {
 			log.Fatal(err)
 		}
-	}()
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Fatal(err)
+			}
+		}()
 
-	encoder := toml.NewEncoder(file)
-	if err := encoder.Encode(state.Viewer); err != nil {
-		log.Fatal(err)
+		encoder := toml.NewEncoder(file)
+		if err := encoder.Encode(state.Viewer); err != nil {
+			log.Fatal(err)
+		}
 	}
-}
-
+*/
 func screenshot(w *glfw.Window) {
 	state := (*State)(w.GetUserPointer())
 

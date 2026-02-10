@@ -1,49 +1,12 @@
 package graphics
 
 import (
-	"fmt"
-	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	_ "image/jpeg"
-	"log"
-	"os"
-	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
-
-func glSetup(win *glfw.Window) uint32 {
-	width, height := win.GetSize()
-	gl.Viewport(0, 0, int32(width), int32(height))
-
-	gl.Enable(gl.CULL_FACE)
-	gl.CullFace(gl.FRONT)
-
-	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINES) // wireframe
-	gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
-
-	fmt.Println("Compiling Shaders...")
-	program, err := newProgram("graphics/shaders/canvas.vert", "graphics/shaders/fractal.frag")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Compilation Done.")
-	gl.UseProgram(program)
-
-	return program
-}
-
-func BindRenderer(win *glfw.Window) uint32 {
-	win.MakeContextCurrent()
-	glfw.SwapInterval(1) // vsync (set to zero for unlimited framerate
-
-	if err := gl.Init(); err != nil {
-		log.Fatalln("failed to initialize OpenGL", err)
-	}
-
-	return glSetup(win)
-}
 
 type VBO uint32
 type EBO struct {
@@ -53,12 +16,6 @@ type EBO struct {
 type VAO struct {
 	vao   uint32
 	count int32
-}
-
-type Object struct {
-	Mesh        *Mesh
-	Position    mgl32.Vec3
-	Orientation mgl32.Quat
 }
 
 func constructVBO(vertices []mgl32.Vec3) VBO {
@@ -115,71 +72,4 @@ func (v *VAO) Draw() {
 	gl.BindVertexArray(v.vao)
 	gl.DrawElements(gl.TRIANGLES, int32(v.count*3), gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)
-}
-
-func newProgram(vertexShaderFile, fragmentShaderFile string) (uint32, error) {
-	vertexShaderSource, err := os.ReadFile(vertexShaderFile)
-	if err != nil {
-		return 0, err
-	}
-	fragmentShaderSource, err := os.ReadFile(fragmentShaderFile)
-	if err != nil {
-		return 0, err
-	}
-
-	vertexShader, err := compileShader(string(vertexShaderSource)+"\x00", gl.VERTEX_SHADER)
-	if err != nil {
-		return 0, err
-	}
-
-	fragmentShader, err := compileShader(string(fragmentShaderSource)+"\x00", gl.FRAGMENT_SHADER)
-	if err != nil {
-		return 0, err
-	}
-
-	program := gl.CreateProgram()
-
-	gl.AttachShader(program, vertexShader)
-	gl.AttachShader(program, fragmentShader)
-	gl.LinkProgram(program)
-
-	var status int32
-	gl.GetProgramiv(program, gl.LINK_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetProgramiv(program, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetProgramInfoLog(program, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to link program: %v", log)
-	}
-
-	gl.DeleteShader(vertexShader)
-	gl.DeleteShader(fragmentShader)
-
-	return program, nil
-}
-
-func compileShader(source string, shaderType uint32) (uint32, error) {
-	shader := gl.CreateShader(shaderType)
-
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
-	gl.CompileShader(shader)
-
-	var status int32
-	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
-
-		return 0, fmt.Errorf("failed to compile %v: %v", source, log)
-	}
-
-	return shader, nil
 }

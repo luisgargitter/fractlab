@@ -1,11 +1,10 @@
 #version 330 core
 
-uniform int overlay;
-uniform float scale; // for ui elements
+uniform vec3[6] colorwheel;
 
-uniform vec2 c;
-uniform vec2 PZ0;
-uniform vec2 PZn;
+uniform vec2[3] polynomial;
+uniform float divergence_bound;
+uniform int max_iter;
 
 in vec2 coord;
 
@@ -16,6 +15,16 @@ vec2 cMul(vec2 a, vec2 b) {
     a.x * b.x - a.y * b.y,  // real part
     a.x * b.y + a.y * b.x   // imag part
     );
+}
+
+vec2 evaluate_polynomial(vec2 z) {
+    vec2 a = polynomial[0];
+    vec2 zp = z;
+    for(int i = 1; i < 3; i++) {
+        a = a + cMul(polynomial[i], zp);
+        zp = cMul(zp, z);
+    }
+    return a;
 }
 
 // calculates divergence bound for this interpolated fractal (analytically derived)
@@ -30,48 +39,27 @@ float divBound(float alpha, float beta, vec2 prec) {
     return R;
 }
 
-const vec3 Hue[6] = vec3[](vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0));
 vec3 colorFromHueSat(float hue, float sat) {
     float h6 = hue*6.0;
     int i = int(h6);
-    vec3 c1 = Hue[i];
-    vec3 c2 = Hue[(i+1) % 6];
+    vec3 c1 = colorwheel[i];
+    vec3 c2 = colorwheel[(i+1) % 6];
     float t = h6 - float(i);
     vec3 col = c1 * (1-t) + c2 * t;
     return sat * col/length(col);
 }
 
-const int depth = 256;
-
-void main()
-{
-    vec2 x = coord;
-    vec2 x2 = cMul(x, x);
-    vec2 prec = PZ0[0]*x2 + PZ0[1]*x + c;
-    float R = divBound(PZn[0], PZn[1], prec);
-
-    vec2 y = x;
-
-    int j = 0;
-
-    for(int i = 0; i < depth && length(y) < R; i++) {
-        y = PZn[0]*cMul(y, y) + PZn[1]*y + prec;
-
-        j++;
+vec4 fixpoint_iteration(vec2 z) {
+    int i;
+    for(i = 0; (i < max_iter) && (length(z) < divergence_bound); i++) {
+        z = evaluate_polynomial(z); // general julia set
     }
-    float hue = float(j)/float(depth);
-    float sat = 1 - pow(0.5, float(depth-j));
+    float hue = float(i)/float(max_iter);
+    float sat = 1 - exp(-float(max_iter-i));
 
-    color = vec4(colorFromHueSat(hue, sat), 1.0);
+    return vec4(colorFromHueSat(hue, sat), 1.0);
+}
 
-    if(overlay == 1) {
-        float lx = length(x);
-        bool circle = abs(1 - length(x)) < 0.001 * scale;
-        bool xaxis = abs(0 - x.x) < 0.001 * scale;
-        bool yaxis = abs(0 - x.y) < 0.001 * scale;
-        bool coeff = abs(length(x - c)) < 0.007 * scale;
-        if (circle || xaxis || yaxis || coeff) {
-            color = vec4(1, 1, 1, 1);
-        }
-    }
+void main() {
+    color = fixpoint_iteration(coord);
 }
